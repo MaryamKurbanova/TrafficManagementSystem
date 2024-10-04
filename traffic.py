@@ -7,20 +7,20 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error
 from sklearn.model_selection import GridSearchCV
 
 
-# Loads datasets
-with gzip.open('data/Automated_Traffic_Volume_Counts_20241002.csv.gz', 'rt') as f:
+# Loads datasets from compressed files
+with gzip.open('data/Automated_Traffic_Volume_Counts_20241003.csv.gz', 'rt') as f:
     traffic_volume = pd.read_csv(f)
 
-with gzip.open('data/NYCOpenDataMotorVehicleCollisionsCrashes.csv.gz', 'rt') as f:
+with gzip.open('data/Motor_Vehicle_Collisions_-_Crashes_20241003.csv.gz', 'rt') as f:
     collisions = pd.read_csv(f, low_memory=False)
 
-with gzip.open('data/NYCOpenDataFHVBaseAggregateReport.csv.gz', 'rt') as f:
+with gzip.open('data/FHV_Base_Aggregate_Report_20241003.csv.gz', 'rt') as f:
     fhv_data = pd.read_csv(f)
 
-with gzip.open('data/NYCOpenDataVZVLeadingPedestrianIntervalSignals.csv.gz', 'rt') as f:
+with gzip.open('data/dot_VZV_Leading_Pedestrian_Intervals_20240130.csv.gz', 'rt') as f:
     pedestrian_signals = pd.read_csv(f)
 
-with gzip.open('data/USAccidents.csv.gz', 'rt') as f:
+with gzip.open('data/US_Accidents_March23.csv.gz', 'rt') as f:
     us_accidents = pd.read_csv(f)
 
 # Displays the columns of the Traffic Volume dataset
@@ -39,6 +39,7 @@ def handle_nans(dataframe):
     # Confirms the column has been dropped
     print("Columns after dropping 'toSt':", dataframe.columns)
 
+# Analysis function
 def analyze_data():
     # Handle NaN values in the traffic volume data
     handle_nans(traffic_volume)
@@ -108,9 +109,11 @@ def analyze_collisions(collisions):
     plt.xticks(rotation=45, ha='right')  # Adjust rotation and alignment
     plt.grid(axis='y')
 
+    # Show the plot
     plt.tight_layout()  # Adjust layout
     plt.show()
 
+# Features Engineering
 def feature_engineering(traffic_volume):
     # Calculates average and total volume
     traffic_volume['Average_Volume'] = traffic_volume.groupby(['Yr', 'M', 'D', 'HH'])['Vol'].transform('mean')
