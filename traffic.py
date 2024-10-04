@@ -8,7 +8,8 @@ from sklearn.model_selection import GridSearchCV
 
 
 # Loads datasets
-traffic_volume = pd.read_csv('data/Automated_Traffic_Volume_Counts_20241002.csv')
+with gzip.open('data/Automated_Traffic_Volume_Counts_20241002.csv.gz', 'rt') as f:
+    traffic_volume = pd.read_csv(f)
 
 with gzip.open('data/NYCOpenDataMotorVehicleCollisionsCrashes.csv.gz', 'rt') as f:
     collisions = pd.read_csv(f, low_memory=False)
