@@ -136,7 +136,7 @@ def evaluate_model(model, X_test, y_test):
     # Plot 
     plt.figure(figsize=(10, 5))
     plt.plot(y_test.values[:100], label="Actual Values", color="blue")
-    plt.plot(y_pred[:100], label="Predicted Values", color="orange")
+    plt.plot(y_pred[:100], label="Potential Values", color="orange")
     plt.xlabel("Sample Index")
     plt.ylabel("Traffic Volume")
     plt.title("Actual vs. Potential Traffic Volume(2025) on Test Set (First 100 Samples)")
@@ -182,16 +182,15 @@ def create_future_data(year=2025, traffic_volume=None, model=None):
     merged_data['Rolling_Mean_3'] = merged_data['Vol'].rolling(window=3).mean()
     merged_data['Rolling_Sum_3'] = merged_data['Vol'].rolling(window=3).sum()
 
-    # Prepares features for model prediction
+    # Prepares features for model
     future_features = merged_data[['Lag_1', 'Lag_24', 'Rolling_Mean_3', 'Rolling_Sum_3', 'Hour'] +
                                  [col for col in merged_data.columns if 'DayOfWeek_' in col]]
 
-    # Predicts future traffic volumes using the historical-based features
-    future_predictions = model.predict(future_features.fillna(0))
-    merged_data['Predicted_Volume'] = future_predictions
+    future_data = model.predict(future_features.fillna(0))
+    merged_data['Potential_Volume'] = future_data
 
     # Includes additional location details in the final output
-    return merged_data[['Datetime', 'Yr', 'M', 'D', 'HH', 'MM', 'Predicted_Volume',
+    return merged_data[['Datetime', 'Yr', 'M', 'D', 'HH', 'MM', 'Potential_Volume',
                        'WktGeom', 'street', 'fromSt', 'toSt', 'Direction']]
 
 def main():
@@ -217,8 +216,9 @@ def main():
     evaluate_model(model, X_test, y_test)
     
     future_data = create_future_data(year=2025, traffic_volume=traffic_volume, model=model)
-    future_data.to_csv('traffic_volume_predictions_2025.csv', index=False)
-    print("Predictions saved to 'traffic_volume_predictions_2025.csv'.")
+    future_data.to_csv('traffic_volume_2025.csv', index=False)
+    print("Saved to 'traffic_volume_2025.csv'.")
+
 
 if __name__ == "__main__":
     main()
