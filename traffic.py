@@ -1,120 +1,50 @@
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
-import gzip
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import mean_absolute_error, mean_squared_error
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+import gzip
+from datetime import timedelta
 
-# Loads datasets
-with gzip.open('data/Automated_Traffic_Volume_Counts_20241003.csv.gz', 'rt') as f:
-    traffic_volume = pd.read_csv(f)
+# Load datasets
+def load_data():
+    with gzip.open('data/filtered_Traffic_Volume.csv.gz', 'rt') as f:
+        traffic_volume = pd.read_csv(f)
 
-with gzip.open('data/sorted_crash_data_from_2020.csv.gz', 'rt') as f:
-    collisions_2020 = pd.read_csv(f, low_memory=False)
+    with gzip.open('data/sorted_crash_data_from_2020.csv.gz', 'rt') as f:
+        collisions_2020 = pd.read_csv(f, low_memory=False)
 
-with gzip.open('data/sorted_crash_data_before_2020part2.csv.gz', 'rt') as f:
-    collisions_before_2020_part2 = pd.read_csv(f, low_memory=False)
-
-with gzip.open('data/FHV_Base_Aggregate_Report_20241003.csv.gz', 'rt') as f:
-    fhv_data = pd.read_csv(f)
-
-    # Removes the 'Base Name' and 'DBA' columns from the FHV dataset
-    fhv_data.drop(columns=['Base Name', 'DBA'], inplace=True, errors='ignore')  # errors='ignore' to avoid issues if the columns are already missing
-
-with gzip.open('data/dot_VZV_Leading_Pedestrian_Intervals_20240130.csv.gz', 'rt') as f:
-    pedestrian_signals = pd.read_csv(f)
-
-# Displays the columns of the Traffic Volume dataset
-print("Traffic Volume Columns:", traffic_volume.columns)
-
-# Function to handle NaN values in the traffic volume data
-def handle_nans(dataframe):
-    print("NaN values in each column before dropping 'toSt':\n", dataframe.isnull().sum())
+    with gzip.open('data/sorted_crash_data_before_2020part2.csv.gz', 'rt') as f:
+        collisions_before_2020_part2 = pd.read_csv(f, low_memory=False)
     
-    # Drops the 'toSt' column
-    dataframe.drop(columns=['toSt'], inplace=True)
-    print("NaN values in each column after dropping 'toSt':\n", dataframe.isnull().sum())
-    print("Columns after dropping 'toSt':", dataframe.columns)
-
-# Analysis function
-def analyze_data():
-    # Handles NaN values in the traffic volume data
-    handle_nans(traffic_volume)
-
-    # Displays sample data from each dataset
-    print("\nTraffic Volume Data:")
-    print(traffic_volume.head())
-    
-    columns_to_keep = ['CRASH DATE', 'CRASH TIME', 'ON STREET NAME', 'CROSS STREET NAME']
-    collisions_filtered = collisions_2020[columns_to_keep]
-
-    # prints collisions data
-    print("\nCollisions Data after filtering:")
-    # Displays the filtered DataFrame
-    print(collisions_filtered.head())
-    
-    print("\nFor-Hire Vehicle Data (after removing 'Base Name' and 'DBA'):")
-    print(fhv_data.head())
-    
-    print("\nPedestrian Signals Data:")
-    print(pedestrian_signals.head())
-
-    # Plots traffic volume over time
-    plot_traffic_volume()
-
-# Function to plot the traffic volume over time
-def plot_traffic_volume():
-    # Creates a Datetime column from separate columns
+    # Combine date and time columns into a datetime object
     traffic_volume['Datetime'] = pd.to_datetime(
         traffic_volume[['Yr', 'M', 'D', 'HH', 'MM']].astype(str).agg('-'.join, axis=1),
-        format='%Y-%m-%d-%H-%M', errors='coerce')
-
-    # Ensures 'Datetime' is not null after conversion
-    if traffic_volume['Datetime'].isnull().any():
-        print("Warning: Some datetime values could not be parsed. Check the data.")
-
-    # Plots the traffic volume over time
-    plt.figure(figsize=(12, 6))
-    plt.plot(traffic_volume['Datetime'], traffic_volume['Vol'], marker='o', linestyle='-')
-    plt.title('Traffic Volume by Time')
-    plt.xlabel('Datetime')
-    plt.ylabel('Volume')
-    plt.xticks(rotation=45)
-    plt.grid()
-    plt.tight_layout()
-    plt.show()
-
-def analyze_collisions(collisions):
-    # Converts crash date and time to datetime
-    collisions['Crash_Datetime'] = pd.to_datetime(
-        collisions['CRASH DATE'] + ' ' + collisions['CRASH TIME'],
-        format='%m/%d/%Y %H:%M', errors='coerce'
+        format='%Y-%m-%d-%H-%M', errors='coerce'
     )
+    return traffic_volume, collisions_2020, collisions_before_2020_part2
 
-    # Extracts the year from the Crash_Datetime
-    collisions['Year'] = collisions['Crash_Datetime'].dt.year
+def plot_total_traffic_volume(traffic_volume):
+    # Convert Vol to numeric in case of data type issues
+    traffic_volume['Vol'] = pd.to_numeric(traffic_volume['Vol'], errors='coerce')
+    traffic_volume.dropna(subset=['Vol'], inplace=True)  # Drops any NaN values in 'Vol'
 
-    # Counts collisions per year
-    yearly_collisions = collisions.groupby('Year').size()
+    # Groups by year and sum the traffic volume
+    yearly_totals = traffic_volume.groupby('Yr')['Vol'].sum()
+    print("Yearly Totals:", yearly_totals)  # Debugging step to inspect values
 
-    # Plots the number of collisions per year
-    plt.figure(figsize=(12, 6))
-    yearly_collisions.plot(kind='bar', color='skyblue')
-    plt.title('Total Collisions by Year')
+    # Plots as a bar graph
+    plt.figure(figsize=(10, 6))
+    plt.bar(yearly_totals.index, yearly_totals.values)
     plt.xlabel('Year')
-    plt.ylabel('Number of Collisions')
-
-    # Rotates x-axis labels and sets the ticks
-    plt.xticks(rotation=45, ha='right')
-    plt.grid(axis='y')
-
-    # Shows the plot
-    plt.tight_layout()
+    plt.ylabel('Total Traffic Volume')
+    plt.title('Total Traffic Volume per Year')
     plt.show()
 
-def analyze_collisions_combined(collisions_2020, collisions_before_2020):
-    # Combine the two collision datasets
-    combined_collisions = pd.concat([collisions_2020, collisions_before_2020], ignore_index=True)
+def analyze_collisions_combined(collisions_2020 , collisions_before_2020_part2):
+    # Combines the two collision datasets
+    combined_collisions = pd.concat([collisions_2020, collisions_before_2020_part2], ignore_index=True)
 
     # Converts crash date and time to datetime for combined data
     combined_collisions['Crash_Datetime'] = pd.to_datetime(
@@ -143,48 +73,152 @@ def analyze_collisions_combined(collisions_2020, collisions_before_2020):
     plt.tight_layout()
     plt.show()
 
+# Feature Engineering
 def feature_engineering(traffic_volume):
-    # Calculates average and total volume
-    traffic_volume['Average_Volume'] = traffic_volume.groupby(['Yr', 'M', 'D', 'HH'])['Vol'].transform('mean')
-    traffic_volume['Total_Volume'] = traffic_volume.groupby(['Yr', 'M', 'D'])['Vol'].transform('sum')
-
-    # Creates additional features for the hour and day of the week
+    traffic_volume['Lag_1'] = traffic_volume['Vol'].shift(1)
+    traffic_volume['Lag_24'] = traffic_volume['Vol'].shift(96)  # 24-hour lag for 15-min intervals
+    traffic_volume['Rolling_Mean_3'] = traffic_volume['Vol'].rolling(window=3).mean()
+    traffic_volume['Rolling_Sum_3'] = traffic_volume['Vol'].rolling(window=3).sum()
+    
     traffic_volume['Hour'] = traffic_volume['HH']
-    traffic_volume['DayOfWeek'] = pd.to_datetime(traffic_volume['Datetime']).dt.day_name()  # Extract day name
-
-    traffic_volume = pd.get_dummies(traffic_volume, columns=['DayOfWeek'], drop_first=True)
-
+    traffic_volume['DayOfWeek'] = traffic_volume['Datetime'].dt.dayofweek
+    for i in range(7):
+        traffic_volume[f'DayOfWeek_{i}'] = (traffic_volume['DayOfWeek'] == i).astype(int)
+    
+    # Drops rows with NaN values generated by lag and rolling features
+    traffic_volume.dropna(inplace=True)
     return traffic_volume
 
-# Runs the analysis
-analyze_data()
-analyze_collisions(collisions_2020)
+# Prepares data for model training
+def prepare_data(traffic_volume):
+    # Creates list of features
+    features = ['Lag_1', 'Lag_24', 'Rolling_Mean_3', 'Rolling_Sum_3', 'Hour'] + \
+               [col for col in traffic_volume.columns if 'DayOfWeek_' in col]
+    
+    print("Features used for training:", features)
+    
+    # Defines the target variable
+    target = traffic_volume['Vol']
+    
+    # Splits into training and testing sets based on year
+    train_data = traffic_volume[traffic_volume['Yr'] < 2023]
+    test_data = traffic_volume[traffic_volume['Yr'] >= 2023]
 
-# Analyze combined collisions
-analyze_collisions_combined(collisions_2020, collisions_before_2020_part2)
+    # Ensures columns exist before splitting data
+    X_train = train_data[features]
+    y_train = train_data['Vol']
+    X_test = test_data[features]
+    y_test = test_data['Vol']
+    
+    return X_train, X_test, y_train, y_test
 
-# Applies feature engineering
-traffic_volume = feature_engineering(traffic_volume)
+# Trains the model
+def train_model(X_train, y_train):
+    model = RandomForestRegressor(n_estimators=100, random_state=42, n_jobs=-1)
+    model.fit(X_train, y_train)
+    return model
 
-# Prepares features and target variable
-features = traffic_volume[['Average_Volume', 'Total_Volume', 'Hour'] + [col for col in traffic_volume.columns if 'DayOfWeek_' in col]]  # Include one-hot encoded columns
-target = traffic_volume['Vol']
+# Evaluates the model
+def evaluate_model(model, X_test, y_test):
+    
+    y_pred = model.predict(X_test)
+    
+    # Calculates evaluation metrics
+    mae = mean_absolute_error(y_test, y_pred)
+    mse = mean_squared_error(y_test, y_pred)
+    r2 = r2_score(y_test, y_pred)
+    
+    # Prints metrics
+    print(f'Mean Absolute Error (MAE): {mae:.2f}')
+    print(f'Mean Squared Error (MSE): {mse:.2f}')
+    print(f'R² Score: {r2:.2f}')
+    
+    # Plot 
+    plt.figure(figsize=(10, 5))
+    plt.plot(y_test.values[:100], label="Actual Values", color="blue")
+    plt.plot(y_pred[:100], label="Predicted Values", color="orange")
+    plt.xlabel("Sample Index")
+    plt.ylabel("Traffic Volume")
+    plt.title("Actual vs. Potential Traffic Volume(2025) on Test Set (First 100 Samples)")
+    plt.legend()
+    plt.show()
 
-# Train-test split
-X_train, X_test, y_train, y_test = train_test_split(features, target, test_size=0.2, random_state=42)
+# Creates data for 2025 based on historical patterns
+def create_future_data(year=2025, traffic_volume=None, model=None):
+    # Generates date range for 2025 with 15-minute intervals
+    dates = pd.date_range(start=f'{year}-01-01', end=f'{year}-12-31', freq='15min')
+    future_data = pd.DataFrame({'Datetime': dates})
 
-# Model Training
-model = RandomForestRegressor(n_estimators=100, random_state=42)
-model.fit(X_train, y_train)
+    # Extracts features (year, month, day, etc.) for alignment with historical data
+    future_data['Yr'] = future_data['Datetime'].dt.year
+    future_data['M'] = future_data['Datetime'].dt.month
+    future_data['D'] = future_data['Datetime'].dt.day
+    future_data['HH'] = future_data['Datetime'].dt.hour
+    future_data['MM'] = future_data['Datetime'].dt.minute
+    future_data['Hour'] = future_data['HH']
+    future_data['DayOfWeek'] = future_data['Datetime'].dt.dayofweek
 
-y_pred = model.predict(X_test)
+    # Creates DayOfWeek binary columns for model consistency
+    for i in range(7):
+        future_data[f'DayOfWeek_{i}'] = (future_data['DayOfWeek'] == i).astype(int)
 
-print("Predicted Traffic Volumes:\n", y_pred)
+    # Merges historical data to provide Lag_1, Lag_24, and rolling features
+    merged_data = future_data.copy()
+    merged_data['DateOnly'] = merged_data['Datetime'].dt.strftime('%m-%d %H:%M')  # use month-day hour:minute as a key
 
-# Model Evaluation
-mae = mean_absolute_error(y_test, y_pred)
-mse = mean_squared_error(y_test, y_pred)
+    # Generates a matching key in historical data for alignment
+    traffic_volume['DateOnly'] = traffic_volume['M'].astype(str).str.zfill(2) + "-" + \
+                                traffic_volume['D'].astype(str).str.zfill(2) + " " + \
+                                traffic_volume['HH'].astype(str).str.zfill(2) + ":" + \
+                                traffic_volume['MM'].astype(str).str.zfill(2)
 
-print(f'Mean Absolute Error: {mae}')
-print(f'Mean Squared Error: {mse}')
+    # Merges historical volume data and additional columns to future data based on the DateOnly key
+    merged_data = merged_data.merge(traffic_volume[['DateOnly', 'Vol', 'WktGeom', 'street', 'fromSt', 'toSt', 'Direction']],
+                                   on='DateOnly', how='left', suffixes=('', '_historical'))
 
+    # Uses historical volume data as Lag_1 and Lag_24 features
+    merged_data['Lag_1'] = merged_data['Vol'].shift(1)  # Previous volume for Lag_1
+    merged_data['Lag_24'] = merged_data['Vol'].shift(96)  # 24-hour prior volume for Lag_24 (assuming 15-minute intervals)
+    merged_data['Rolling_Mean_3'] = merged_data['Vol'].rolling(window=3).mean()
+    merged_data['Rolling_Sum_3'] = merged_data['Vol'].rolling(window=3).sum()
+
+    # Prepares features for model prediction
+    future_features = merged_data[['Lag_1', 'Lag_24', 'Rolling_Mean_3', 'Rolling_Sum_3', 'Hour'] +
+                                 [col for col in merged_data.columns if 'DayOfWeek_' in col]]
+
+    # Predicts future traffic volumes using the historical-based features
+    future_predictions = model.predict(future_features.fillna(0))
+    merged_data['Predicted_Volume'] = future_predictions
+
+    # Includes additional location details in the final output
+    return merged_data[['Datetime', 'Yr', 'M', 'D', 'HH', 'MM', 'Predicted_Volume',
+                       'WktGeom', 'street', 'fromSt', 'toSt', 'Direction']]
+
+def main():
+    # Unpacks the datasets returned by load_data
+    traffic_volume, collisions_2020, collisions_before_2020_part2 = load_data()
+    
+    # Filters the traffic_volume dataset to the years of interest
+    traffic_volume = traffic_volume[(traffic_volume['Yr'] >= 2018) & (traffic_volume['Yr'] <= 2024)]
+
+    # Plots traffic volume trends for each year for analysis
+    plot_total_traffic_volume(traffic_volume)
+
+    # Analyzes collisions combined using the two collision datasets
+    analyze_collisions_combined(collisions_2020, collisions_before_2020_part2)
+    
+    # Further filtering
+    traffic_volume = traffic_volume[(~traffic_volume['Yr'].between(2020, 2021))]
+
+    traffic_volume = feature_engineering(traffic_volume)
+    
+    X_train, X_test, y_train, y_test = prepare_data(traffic_volume)
+    model = train_model(X_train, y_train)
+    evaluate_model(model, X_test, y_test)
+    
+    future_data = create_future_data(year=2025, traffic_volume=traffic_volume, model=model)
+    future_data.to_csv('traffic_volume_predictions_2025.csv', index=False)
+    print("Predictions saved to 'traffic_volume_predictions_2025.csv'.")
+
+if __name__ == "__main__":
+    main()
