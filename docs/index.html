@@ -1,7 +1,7 @@
 
 <!DOCTYPE html>
 <html lang="en">
-<head>   
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Traffic Analysis Dashboard</title>
@@ -10,15 +10,6 @@
             font-family: Arial, sans-serif;
             line-height: 1.6;
             margin: 20px;
-            padding: 0;
-        }
-        h1, h2 {
-            text-align: center;
-        }
-        .container {
-            width: 80%;
-            margin: 0 auto;
-             margin: 20px;
             padding: 0;
         }
         h1, h2 {
@@ -37,47 +28,46 @@
             margin-top: 20px;
         }
         a {
-          text-decoration: none;
+            text-decoration: none;
             color: white;
             background-color: #007BFF;
             padding: 10px 20px;
             border-radius: 5px;
         }
         a:hover {
-            background-color: #0056b3;
+              background-color: #0056b3;
         }
     </style>
-      </style>
 </head>
 <body>
     <div class="container">
         <h1>Traffic Analysis Dashboard</h1>
         <h2>Generated Traffic Data Insights</h2>
-         
+
         <!-- Total Traffic Volume Plot -->
         <div class="plot">
             <h3>Total Traffic Volume Per Year</h3>
-            <img src="static/traffic_volume_plot.png" alt="Total Traffic Volume$
- </div>
+            <img src="static/traffic_volume_plot.png" alt="Total Traffic Volume Plot" />
+        </div>
 
         <!-- Collisions Plot -->
         <div class="plot">
-            <h3>Total Collisions Per Year</h3>  
+     <h3>Total Collisions Per Year</h3>
             <img src="static/collisions_plot.png" alt="Total Collisions Plot" />
         </div>
-
+    
         <!-- Potential vs Actual Plot -->
         <div class="plot">
-           <h3>Potential vs Actual Traffic Volume (2025)</h3>
+            <h3>Potential vs Actual Traffic Volume (2025)</h3>
  <img src="static/actual_vs_potential_plot.png" alt="Potential vs Actual
 Traffic Volume Plot" width="800">
         </div>
-            
+
         <!-- Download Section -->
         <div class="download-section">
             <h3>Download 2025 Pontential traffic volume Data</h3>
-            <a href="static/traffic_volume_2025.csv" download>Download Traffic $
+            <a href="static/traffic_volume_2025.csv" download>Download Traffic Volume 2025 CSV</a>
         </div>
-</div>
+    </div>
 </body>
-</html>
+    </html>
