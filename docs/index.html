@@ -6,35 +6,68 @@
     <title>Traffic Analysis Dashboard</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
             line-height: 1.6;
-            margin: 20px;
+            margin: 0;
             padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
         }
-        h1, h2 {
+        h1 {
             text-align: center;
+            margin-top: 20px;
+            color: #0056b3;
+        }
+        h2, h3 {
+            text-align: center;
+            margin: 10px 0;
         }
         .container {
-            width: 80%;
-            margin: 0 auto;
+            width: 90%;
+            max-width: 1200px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
         .plot {
-            margin-bottom: 20px;
+            margin: 20px auto;
             text-align: center;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .plot img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+            margin-top: 10px;
         }
         .download-section {
             text-align: center;
-            margin-top: 20px;
+            margin-top: 30px;
+            padding: 20px;
+            background: #eaf4ff;
+            border-radius: 8px;
         }
         a {
             text-decoration: none;
             color: white;
             background-color: #007BFF;
-            padding: 10px 20px;
+            padding: 12px 25px;
             border-radius: 5px;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
         }
         a:hover {
             background-color: #0056b3;
+        }
+        @media (max-width: 768px) {
+            .container {
+                width: 95%;
+            }
         }
     </style>
 </head>
@@ -46,28 +79,26 @@
         <!-- Total Traffic Volume Plot -->
         <div class="plot">
             <h3>Total Traffic Volume Per Year</h3>
-            <img src="static/traffic_volume_plot.png" alt="Total Traffic Volume Plot" />
+            <img src="static/traffic_volume_plot.png" alt="Total Traffic Volume Plot">
         </div>
 
         <!-- Collisions Plot -->
         <div class="plot">
             <h3>Total Collisions Per Year</h3>
-            <img src="static/collisions_plot.png" alt="Total Collisions Plot" />
+            <img src="static/collisions_plot.png" alt="Total Collisions Plot">
         </div>
 
         <!-- Potential vs Actual Plot -->
         <div class="plot">
             <h3>Potential vs Actual Traffic Volume (2025)</h3>
- <img src="static/actual_vs_potential_plot.png" alt="Potential vs Actual
-Traffic Volume Plot" width="800">
-                  </div>
+            <img src="static/actual_vs_potential_plot.png" alt="Potential vs Actual Traffic Volume Plot">
+        </div>
 
         <!-- Download Section -->
         <div class="download-section">
-            <h3>Download 2025 Pontential traffic volume Data</h3>
+            <h3>Download 2025 Potential Traffic Volume Data</h3>
             <a href="static/traffic_volume_2025.csv" download>Download Traffic Volume 2025 CSV</a>
         </div>
     </div>
 </body>
 </html>
-
