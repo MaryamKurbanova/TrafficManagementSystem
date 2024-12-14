@@ -3,102 +3,187 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Traffic Analysis Dashboard</title>
+    <title>Traffic Congestion Maps</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css" />
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            line-height: 1.6;
+        * {
             margin: 0;
             padding: 0;
-            background-color: #f4f4f9;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f9f9f9;
             color: #333;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px 0;
+        }
+        header {
+            background-color: #333;
+            color: white;
+            padding: 20px 0;
+            width: 100%;
+            text-align: center;
+            margin-bottom: 30px;
         }
         h1 {
-            text-align: center;
-            margin-top: 20px;
-            color: #0056b3;
-        }
-        h2, h3 {
-            text-align: center;
-            margin: 10px 0;
+            font-size: 2.5rem;
+            font-weight: 600;
         }
         .container {
-            width: 90%;
-            max-width: 1200px;
-            margin: 20px auto;
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 1000px;
+            margin-bottom: 30px;
         }
-        .plot {
-            margin: 20px auto;
+        .slider-container {
             text-align: center;
-            padding: 15px;
-            background: #f9f9f9;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
         }
-        .plot img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 5px;
+        .slider {
+            width: 80%;
+            max-width: 500px;
+            height: 10px;
+            background-color: #ddd;
+            border-radius: 10px;
+            outline: none;
+            transition: background-color 0.3s;
+        }
+        .slider:hover {
+            background-color: #bbb;
+        }
+        .slider-label {
+            font-size: 1.1rem;
             margin-top: 10px;
+            color: #555;
         }
-        .download-section {
-            text-align: center;
-            margin-top: 30px;
+        .chart-container {
+            width: 100%;
+            height: 400px;
+            margin-bottom: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            background-color: white;
+            overflow: hidden;
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        .graphs-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 40px;
+            width: 100%;
+            max-width: 1000px;
+            margin-top: 40px;
+        }
+        .graph-card {
+            width: 100%;
+            max-width: 900px;
+            background: white;
             padding: 20px;
-            background: #eaf4ff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .graph-card img {
+            width: 100%;
+            height: auto;
             border-radius: 8px;
         }
-        a {
-            text-decoration: none;
-            color: white;
-            background-color: #007BFF;
-            padding: 12px 25px;
-            border-radius: 5px;
-            font-size: 16px;
-            transition: background-color 0.3s ease;
-        }
-        a:hover {
-            background-color: #0056b3;
-        }
-        @media (max-width: 768px) {
-            .container {
-                width: 95%;
-            }
+        .graph-card h2 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: #333;
         }
     </style>
 </head>
 <body>
-     <div class="container">
-        <h1>Traffic Analysis Dashboard</h1>
-        <h2>Generated Traffic Data Insights</h2>
+    <header>
+        <h1>NYC Traffic Congestion Maps</h1>
+    </header>
 
-        <!-- Total Traffic Volume Plot -->
-        <div class="plot">
-            <h3>Total Traffic Volume Per Year</h3>
-            <img src="static/traffic_volume_plot.png" alt="Total Traffic Volume Plot">
+    <div class="container">
+        <div class="slider-container">
+            <h2>Select Hour</h2>
+            <input type="range" min="0" max="23" value="11" id="hourSlider" class="slider">
+            <p id="hourLabel" class="slider-label">Hour: 11:00 AM</p>
         </div>
 
-        <!-- Collisions Plot -->
-        <div class="plot">
-            <h3>Total Collisions Per Year</h3>
-            <img src="static/collisions_plot.png" alt="Total Collisions Plot">
-        </div>
-
-        <!-- Potential vs Actual Plot -->
-        <div class="plot">
-            <h3>Potential vs Actual Traffic Volume (2025)</h3>
-            <img src="static/actual_vs_potential_plot.png" alt="Potential vs Actual Traffic Volume Plot">
-        </div>
-
-        <!-- Download Section -->
-        <div class="download-section">
-            <h3>Download 2025 Potential Traffic Volume Data</h3>
-            <a href="static/traffic_volume_2025.csv" download>Download Traffic Volume 2025 CSV</a>
+        <!-- Traffic Heatmap -->
+        <div class="chart-container">
+            <h2>Traffic Heatmap</h2>
+            <iframe id="heatmapIframe" src="heatmaps/traffic_heatmap_11.html"></iframe>
         </div>
     </div>
+
+    <!-- Static graphs stacked vertically -->
+    <div class="graphs-container">
+        <div class="graph-card">
+            <h2>Traffic Volume of the Years</h2>
+            <img src="static/traffic_volume_plot.png" alt="Traffic Volume of the Years">
+        </div>
+        <div class="graph-card">
+            <h2>Collisions</h2>
+            <img src="static/collisions_plot.png" alt="Collisions">
+        </div>
+        <div class="graph-card">
+            <h2>Actual vs Potential</h2>
+            <img src="static/actual_vs_potential_plot.png" alt="Actual vs Potential">
+        </div>
+    </div>
+
+    <script>
+        // Function to update the heatmap iframe based on the selected hour
+        function updateHeatmap(hour) {
+            const iframe = document.getElementById("heatmapIframe");
+            let adjustedHour = hour; // Directly use the hour as the number
+
+            // Build the heatmap file name dynamically
+            const heatmapFile = `heatmaps/traffic_heatmap_${adjustedHour}.html`; 
+
+            // Add a timestamp to the URL to prevent caching
+            const timestamp = new Date().getTime();  // Generate a unique timestamp
+            const heatmapSrc = `${heatmapFile}?t=${timestamp}`; // Append timestamp to URL
+
+            // Update the iframe source to the new heatmap file
+            iframe.src = heatmapSrc; 
+        }
+
+        // Get slider and label elements
+        const hourSlider = document.getElementById("hourSlider");
+        const hourLabel = document.getElementById("hourLabel");
+
+        // Event listener for slider change
+        hourSlider.addEventListener('input', function() {
+            const hour = hourSlider.value;
+            let hourText = formatHour(hour); // Format hour to display AM/PM format
+            hourLabel.textContent = `Hour: ${hourText}`;
+
+            // Update the heatmap based on the selected hour
+            updateHeatmap(hour);
+        });
+
+        // Function to format hour to AM/PM
+        function formatHour(hour) {
+            if (hour == 0) return '12:00 AM';
+            if (hour == 12) return '12:00 PM';
+            return hour > 12 ? `${hour - 12}:00 PM` : `${hour}:00 AM`;
+        }
+
+        // Initial setup: set heatmap based on initial slider value
+        const initialHour = hourSlider.value;
+        updateHeatmap(initialHour); // Set the initial heatmap for the default slider value (11 AM)
+    </script>
 </body>
 </html>
+
+
