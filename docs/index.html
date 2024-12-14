@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Traffic Congestion Maps</title>
+    <title>NYC Traffic Analysis</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css" />
     <style>
         * {
@@ -108,7 +108,7 @@
 </head>
 <body>
     <header>
-        <h1>NYC Traffic Congestion Maps</h1>
+        <h1>NYC Traffic Analysis</h1>
     </header>
 
     <div class="container">
@@ -120,7 +120,7 @@
 
         <!-- Traffic Heatmap -->
         <div class="chart-container">
-            <h2>Traffic Heatmap</h2>
+            <h2>2024 Congestion Areas</h2>
             <iframe id="heatmapIframe" src="heatmaps/traffic_heatmap_11.html"></iframe>
         </div>
     </div>
@@ -128,15 +128,15 @@
     <!-- Static graphs stacked vertically -->
     <div class="graphs-container">
         <div class="graph-card">
-            <h2>Traffic Volume of the Years</h2>
+            <h2>Traffic Volume per Year</h2>
             <img src="static/traffic_volume_plot.png" alt="Traffic Volume of the Years">
         </div>
         <div class="graph-card">
-            <h2>Collisions</h2>
+            <h2>Collisions per Year</h2>
             <img src="static/collisions_plot.png" alt="Collisions">
         </div>
         <div class="graph-card">
-            <h2>Actual vs Potential</h2>
+            <h2>Past Traffic Volume vs Potential Traffic Volume (2025)</h2>
             <img src="static/actual_vs_potential_plot.png" alt="Actual vs Potential">
         </div>
     </div>
