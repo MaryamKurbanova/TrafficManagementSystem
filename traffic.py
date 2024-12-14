@@ -8,6 +8,10 @@ import gzip
 import json
 import os
 from datetime import timedelta
+import folium
+from folium.plugins import HeatMap 
+import re
+import pyproj
 
 # Load datasets
 def load_data():
@@ -28,7 +32,10 @@ def load_data():
         traffic_volume[['Yr', 'M', 'D', 'HH', 'MM']].astype(str).agg('-'.join, axis=1),
         format='%Y-%m-%d-%H-%M', errors='coerce'
     )
-    return traffic_volume, collisions_2020, collisions_before_2020_part2, traffic_volume_2016andafter
+
+    traffic_data_2024 = traffic_volume[traffic_volume['Yr'] == 2024]
+
+    return traffic_volume, collisions_2020, collisions_before_2020_part2, traffic_volume_2016andafter,traffic_data_2024
 
 def plot_total_traffic_volume(traffic_volume_2016andafter):
     # Convert Vol to numeric in case of data type issues
@@ -260,6 +267,7 @@ def save_collisions_plot(collisions_2020, collisions_before_2020_part2):
 # Save traffic volume data as JSON
 def save_traffic_volume_json(traffic_volume):
     traffic_volume.to_json('static/traffic_volume_2025.json', orient='records')  # Save as JSON
+
 def save_future_data_to_csv(future_data):
     os.makedirs('static', exist_ok=True)  # Ensure the directory exists
     file_path = 'static/traffic_volume_2025.csv'
@@ -267,9 +275,102 @@ def save_future_data_to_csv(future_data):
     print(f"Traffic volume 2025 data saved to '{file_path}'.")
     return file_path
 
+# Function to extract latitude and longitude from WKT format
+def extract_coordinates(wkt):
+    match = re.match(r"POINT \(([-\d\.]+) ([-\d\.]+)\)", wkt)
+    if match:
+        lon, lat = map(float, match.groups())
+        return lat, lon
+    return None, None
+
+# Filter data for the year 2024 and add Hour column
+def filter_data_for_2024(traffic_volume):
+    traffic_2024 = traffic_volume[traffic_volume['Yr'] == 2024]
+    traffic_2024.loc[:, 'Hour'] = traffic_2024['HH']
+    return traffic_2024
+
+
+# Define the projection for NYC (assuming it's in StatePlane or UTM)
+# NAD83 / StatePlane New York Long Island (in meters, EPSG:2263)
+proj_from = pyproj.CRS('EPSG:2263')  # Input projection
+proj_to = pyproj.CRS('EPSG:4326')  # WGS84 (Latitude/Longitude)
+
+# Define transformer to convert between projections
+transformer = pyproj.Transformer.from_crs(proj_from, proj_to, always_xy=True)
+
+def generate_heatmap_for_hour(traffic_data_2024, hour):
+    # Filter the data for the given hour
+    data_for_hour = traffic_data_2024[traffic_data_2024['Hour'] == hour]
+
+    # If there is data for this hour, generate a heatmap
+    if not data_for_hour.empty:
+        # Extract latitude, longitude, and traffic volume for the heatmap
+        heat_data = []
+        for _, row in data_for_hour.iterrows():
+            wkt_geom = row['WktGeom']
+            
+            # Ensure the WKT format is as expected and extract lat/lon
+            if wkt_geom.startswith('POINT'):
+                # Remove the 'POINT (' at the start and ')' at the end
+                cleaned_geom = wkt_geom[6:-1]
+                
+                # Split the cleaned_geom string into lat and lon
+                coordinates = cleaned_geom.split()
+                try:
+                    # Convert to float and handle extra parentheses
+                    x, y = map(lambda x: float(x.strip('()')), coordinates)
+                    
+                    # Transform the coordinates to lat/lon
+                    lon, lat = transformer.transform(x, y)
+                    
+                    volume = row['Vol']
+                    heat_data.append([lat, lon, volume])
+                except ValueError as e:
+                    print(f"Error parsing coordinates {wkt_geom}: {e}")
+                    continue
+
+        # Calculate the center of the data points for proper map centering
+        if heat_data:
+            mean_lat = sum([point[0] for point in heat_data]) / len(heat_data)
+            mean_lon = sum([point[1] for point in heat_data]) / len(heat_data)
+
+            # Create a folium map centered on the mean lat/lon
+            folium_map = folium.Map(location=[mean_lat, mean_lon], zoom_start=11)
+            
+            # Add the heatmap layer
+            HeatMap(heat_data, min_opacity=0.2, max_val=1000, radius=15).add_to(folium_map)
+
+            # Save the heatmap to an HTML file
+            heatmap_filename = f'traffic_heatmap_{hour}.html'
+            folium_map.save(heatmap_filename)
+            print(f"Heatmap saved as {heatmap_filename}")
+        else:
+            print(f"No valid data for hour {hour}, no heatmap generated.")
+    else:
+        print(f"No data for hour {hour}, no heatmap generated.")
+
+def generate_time_based_heatmaps():
+    # Load and process the data (assuming the CSV is loaded into a pandas DataFrame)
+    traffic_volume = pd.read_csv('data/filtered_Traffic_Volume.csv.gz')
+
+    # Filter data for 2024
+    traffic_data_2024 = traffic_volume[traffic_volume['Yr'] == 2024]
+
+    # Add an 'Hour' column to aggregate the traffic data by hour
+    traffic_data_2024.loc[:, 'Hour'] = traffic_data_2024['HH']
+
+    # Group by year, month, day, hour, street, fromSt, toSt, and direction to accumulate traffic volume
+    aggregated_data = traffic_data_2024.groupby(
+        ['Yr', 'M', 'D', 'Hour', 'street', 'fromSt', 'toSt', 'Direction'], 
+        as_index=False).agg({'Vol': 'sum', 'WktGeom': 'first'})
+
+    # Generate heatmaps for each hour of the day (from 00 to 23)
+    for hour in range(24):
+        generate_heatmap_for_hour(aggregated_data, hour)
+
 def main():
     # Unpacks the datasets returned by load_data
-    traffic_volume, collisions_2020, collisions_before_2020_part2, traffic_volume_2016andafter = load_data()
+    traffic_volume, collisions_2020, collisions_before_2020_part2, traffic_volume_2016andafter, traffic_data_2024  = load_data()
     
     # Filters the traffic_volume dataset to the years of interest
     traffic_volume = traffic_volume[(traffic_volume['Yr'] >= 2018) & (traffic_volume['Yr'] <= 2024)]
@@ -290,8 +391,20 @@ def main():
     y_pred = evaluate_model(model, X_test, y_test)
     
     future_data = create_future_data(year=2025, traffic_volume=traffic_volume, model=model)
+
+    # Save the full dataset
     future_data.to_csv('traffic_volume_2025.csv', index=False)
     print("Saved to 'traffic_volume_2025.csv'.")
+
+    # Split the dataset into two parts
+    midpoint = len(future_data) // 2
+    future_data_part1 = future_data.iloc[:midpoint]
+    future_data_part2 = future_data.iloc[midpoint:]
+
+    # Save the split datasets
+    future_data_part1.to_csv('traffic_volume_2025_part1.csv', index=False)
+    future_data_part2.to_csv('traffic_volume_2025_part2.csv', index=False)
+    print("Saved to 'traffic_volume_2025_part1.csv' and 'traffic_volume_2025_part2.csv'.")
 
     save_actual_vs_potential_plot(y_test, y_pred)
     save_traffic_plot(traffic_volume_2016andafter)
@@ -299,6 +412,46 @@ def main():
     save_traffic_volume_json(traffic_volume)
     trafficvolume2025 = save_future_data_to_csv(future_data)
     print("Assets generated: Plots and traffic volume JSON.")
+
+    generate_time_based_heatmaps()
+
+    # Step 1: Load the CSV file into a pandas DataFrame
+    df = pd.read_csv('traffic_volume_2025.csv')
+
+    # Step 2: Create a 'Date' column by combining 'Yr', 'M', and a fixed day '01' for each record
+    df['Date'] = pd.to_datetime(df['Yr'].astype(str) + '-' + df['M'].astype(str) + '-01')
+
+    # Step 3: Group the data by 'Date' and sum 'Potential_Volume' for each month
+    monthly_data = df.groupby(df['Date'].dt.to_period('M'))['Potential_Volume'].sum()
+
+    # Step 4: Ensure the index covers all 12 months (in case some months have no data)
+    all_months = pd.date_range('2025-01-01', '2025-12-01', freq='MS').to_period('M')
+    monthly_data = monthly_data.reindex(all_months, fill_value=0)
+
+    monthly_data = monthly_data[monthly_data.index.month != 7]
+
+    # Step 5: Plot the data as a bar graph
+    plt.figure(figsize=(12, 6))
+
+    # Bar plot of traffic volume per month
+    monthly_data.plot(kind='bar', color='b', alpha=0.7)
+
+    # Formatting the plot
+    plt.title('Monthly Traffic Volume in 2025')
+    plt.xlabel('Month')
+    plt.ylabel('Total Potential Traffic Volume')
+    plt.xticks(rotation=45)
+    plt.grid(True)
+    plt.tight_layout()
+
+    # Show the plot
+    plt.legend(['Potential Volume'])
+
+    # Save the plot as a PNG image
+    plt.savefig('monthly_traffic_volume_2025.png')
+
+    # Optionally, show the plot
+    plt.show()
 
 if __name__ == "__main__":
     main()
