@@ -104,6 +104,69 @@
             margin-bottom: 15px;
             color: #333;
         }
+        /* Styling for the download section */
+.download-section {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    margin-top: 40px;
+    max-width: 900px;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.download-section h2 {
+    font-size: 2rem;
+    margin-bottom: 15px;
+    color: #333;
+    font-weight: 600;
+}
+
+.download-section p {
+    font-size: 1.1rem;
+    margin-bottom: 25px;
+    color: #555;
+}
+
+.download-buttons {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    align-items: center;
+}
+.download-btn {
+    background: linear-gradient(135deg, #6f42c1, #d66dff); /* Gradient background */
+    color: white;   
+    text-decoration: none;
+    padding: 12px 30px;
+    border-radius: 50px; /* Rounded corners */
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-align: center;
+    display: inline-block;
+    transition: all 0.3s ease-in-out; /* Smooth transition */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    transform: scale(1); /* Normal scale */
+}
+
+.download-btn:hover {
+    background: linear-gradient(135deg, #d66dff, #6f42c1); /* Reversed gradient on hover */
+    transform: scale(1.05); /* Slightly enlarge button on hover */
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2); /* Stronger shadow on hover */
+}
+ 
+.download-btn:active {
+    transform: scale(1); /* Reset size when clicked */
+}
+
+.download-btn:focus {  
+    outline: none; /* Remove focus outline */ 
+}
+
+
     </style>
 </head>
 <body>
@@ -139,6 +202,20 @@
             <h2>Past Traffic Volume vs Potential Traffic Volume (2025)</h2>
             <img src="static/actual_vs_potential_plot.png" alt="Actual vs Potential">
         </div>
+    </div>
+
+    <!-- Download Section -->
+    <div class="download-section">
+        <h2>Potential Traffic Volume Data for 2025</h2>
+        <p>I developed a machine learning model to find potential traffic volume for 2025,
+leveraging historical traffic data trends. This data provides valuable insights into expected traffic
+conditions, aiding in better city planning for the coming year. </p>
+    
+<div class="download-buttons">
+        <a href="traffic_volume_2025_part1.csv" download="traffic_volume_2025_part1.csv"
+class="download-btn">Download Part 1</a>
+        <a href="traffic_volume_2025_part2.csv" download="traffic_volume_2025_part2.csv"
+class="download-btn">Download Part 2</a>
     </div>
 
     <script>
