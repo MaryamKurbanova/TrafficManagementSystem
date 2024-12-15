@@ -6,14 +6,14 @@
     <title>NYC Traffic Analysis</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css" />
     <style>
-        * {
+       * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
         body {
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            background-color: #f9f9f9;
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f4f9;
             color: #333;
             line-height: 1.6;
             display: flex;
@@ -22,54 +22,56 @@
             padding: 30px 0;
         }
         header {
-            background-color: #333;
+            background-color: #2c3e50;
             color: white;
             padding: 20px 0;
             width: 100%;
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
         }
         h1 {
-            font-size: 2.5rem;
-            font-weight: 600;
+            font-size: 2.8rem;
+            font-weight: 700;
+            letter-spacing: 1px;
         }
         .container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
             width: 100%;
             max-width: 1000px;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
         }
         .slider-container {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
+        }
+        h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
         }
         .slider {
-            width: 80%;
-            max-width: 500px;
-            height: 10px;
-            background-color: #ddd;
-            border-radius: 10px;
+            width: 66%;
+            height: 8px;
+            background: #ddd;
+            border-radius: 5px;
             outline: none;
-            transition: background-color 0.3s;
+            transition: background 0.3s;
+            appearance: none;
         }
         .slider:hover {
-            background-color: #bbb;
+            background: #bbb;
         }
         .slider-label {
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             margin-top: 10px;
             color: #555;
         }
         .chart-container {
             width: 100%;
-            height: 400px;
-            margin-bottom: 40px;
+            height: 450px;
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            background-color: white;
+            background: white;
             overflow: hidden;
+            margin-bottom: 40px;
         }
         iframe {
             width: 100%;
@@ -77,17 +79,12 @@
             border: none;
         }
         .graphs-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            display: grid;
+            grid-template-columns: 1fr;
             gap: 40px;
-            width: 100%;
             max-width: 1000px;
-            margin-top: 40px;
         }
         .graph-card {
-            width: 100%;
-            max-width: 900px;
             background: white;
             padding: 20px;
             border-radius: 8px;
@@ -96,100 +93,61 @@
         }
         .graph-card img {
             width: 100%;
-            height: auto;
             border-radius: 8px;
         }
-        .graph-card h2 {
-            font-size: 1.8rem;
-            margin-bottom: 15px;
-            color: #333;
+        .download-section {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 900px;
+            margin: 40px auto;
         }
-        /* Styling for the download section */
-.download-section {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    margin-top: 40px;
-    max-width: 900px;
-    width: 100%;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.download-section h2 {
-    font-size: 2rem;
-    margin-bottom: 15px;
-    color: #333;
-    font-weight: 600;
-}
-
-.download-section p {
-    font-size: 1.1rem;
-    margin-bottom: 25px;
-    color: #555;
-}
-
-.download-buttons {
-    display: flex;
-    gap: 20px;
-    justify-content: center;
-    align-items: center;
-}
-.download-btn {
-    background: linear-gradient(135deg, #6f42c1, #d66dff); /* Gradient background */
-    color: white;   
-    text-decoration: none;
-    padding: 12px 30px;
-    border-radius: 50px; /* Rounded corners */
-    font-size: 1.1rem;
-    font-weight: 600;
-    text-align: center;
-    display: inline-block;
-    transition: all 0.3s ease-in-out; /* Smooth transition */
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-    transform: scale(1); /* Normal scale */
-}
-
-.download-btn:hover {
-    background: linear-gradient(135deg, #d66dff, #6f42c1); /* Reversed gradient on hover */
-    transform: scale(1.05); /* Slightly enlarge button on hover */
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2); /* Stronger shadow on hover */
-}
- 
-.download-btn:active {
-    transform: scale(1); /* Reset size when clicked */
-}
-
-.download-btn:focus {  
-    outline: none; /* Remove focus outline */ 
-}
-
-
+        .download-section h2 {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        .download-btn {
+            background: linear-gradient(135deg, #6f42c1, #d66dff);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-align: center;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .download-btn:hover {
+            background: linear-gradient(135deg, #d66dff, #6f42c1);
+            transform: scale(1.05);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+        }
     </style>
 </head>
 <body>
     <header>
         <h1>NYC Traffic Analysis</h1>
     </header>
-
     <div class="container">
         <div class="slider-container">
             <h2>Select Hour</h2>
             <input type="range" min="0" max="23" value="11" id="hourSlider" class="slider">
             <p id="hourLabel" class="slider-label">Hour: 11:00 AM</p>
         </div>
-
-        <!-- Traffic Heatmap -->
         <div class="chart-container">
             <h2>2024 Congestion Areas</h2>
             <iframe id="heatmapIframe" src="heatmaps/traffic_heatmap_11.html"></iframe>
         </div>
     </div>
-
-    <!-- Static graphs stacked vertically -->
     <div class="graphs-container">
+        <div class="graph-card">
+            <h2>Traffic Volume per Year</h2>
+            <img src="static/traffic_volume_plot.png" alt="Traffic Volume of the Years">
+        </div>
         <div class="graph-card">
             <h2>Traffic Volume per Year</h2>
             <img src="static/traffic_volume_plot.png" alt="Traffic Volume of the Years">
