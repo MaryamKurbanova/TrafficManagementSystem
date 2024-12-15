@@ -6,37 +6,40 @@
     <title>NYC Traffic Analysis</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css" />
     <style>
-    * {
+            * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
         body {
-            font-family: 'Roboto', Arial, sans-serif;
-            background-color: #f4f4f4;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f9f9f9;
             color: #333;
-            line-height: 1.8;
+            line-height: 1.6;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 40px 0;
+            padding: 30px 0;
         }
         header {
-            background-color: #00457c;
+            background-color: #333;
             color: white;
-            padding: 25px 0;
+            padding: 20px 0;
             width: 100%;
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
         }
         h1 {
-            font-size: 3rem;
-            font-weight: 700;
+            font-size: 2.5rem;
+            font-weight: 600;
         }
         .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             width: 100%;
-            max-width: 1200px;
-            text-align: center;
+            max-width: 1000px;
+            margin-bottom: 30px;
         }
         .slider-container {
             margin-bottom: 30px;
@@ -61,10 +64,10 @@
         }
         .chart-container {
             width: 100%;
-            height: 450px;
-            margin-bottom: 50px;
-            border-radius: 10px;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+            height: 400px;
+            margin-bottom: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             background-color: white;
             overflow: hidden;
         }
@@ -76,79 +79,93 @@
         .graphs-container {
             display: flex;
             flex-direction: column;
-            gap: 50px;
+            align-items: center;
+            gap: 40px;
             width: 100%;
-            max-width: 1200px;
+            max-width: 1000px;
+            margin-top: 40px;
         }
         .graph-card {
             width: 100%;
+            max-width: 900px;
             background: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             text-align: center;
         }
         .graph-card img {
             width: 100%;
             height: auto;
-            border-radius: 10px;
+            border-radius: 8px;
         }
         .graph-card h2 {
-            font-size: 2rem;
-            margin-bottom: 20px;
+            font-size: 1.8rem;
+            margin-bottom: 15px;
             color: #333;
         }
-        .download-section {
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
-            text-align: center;
-            max-width: 1200px;
-            width: 100%;
-            margin-top: 50px;
-        }
-        .download-section h2 {
-            font-size: 2.5rem;
-            margin-bottom: 20px;
-            color: #333;
-            font-weight: 700;
-        }
-        .download-section p {
-            font-size: 1.2rem;
-            margin-bottom: 30px;
-            color: #555;
-        }
-        .download-buttons {
-            display: flex;
-            gap: 25px;
-            justify-content: center;
-            align-items: center;
-        }
-        .download-btn {
-            background: linear-gradient(135deg, #6f42c1, #d66dff);
-            color: white;
-            text-decoration: none;
-            padding: 15px 40px;
-            border-radius: 50px;
-            font-size: 1.2rem;
-            font-weight: 600;
-            text-align: center;
-            display: inline-block;
-            transition: all 0.3s ease-in-out;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
-        }
-        .download-btn:hover {
-            background: linear-gradient(135deg, #d66dff, #6f42c1);
-            transform: scale(1.05);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-        }
-        .download-btn:active {
-            transform: scale(1);
-        }
-        .download-btn:focus {
-            outline: none;
-        }
+        /* Styling for the download section */
+.download-section {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    margin-top: 40px;
+    max-width: 900px;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.download-section h2 {
+    font-size: 2rem;
+    margin-bottom: 15px;
+    color: #333;
+    font-weight: 600;
+}
+
+.download-section p {
+    font-size: 1.1rem;
+    margin-bottom: 25px;
+    color: #555;
+}
+
+.download-buttons {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    align-items: center;
+}
+.download-btn {
+    background: linear-gradient(135deg, #6f42c1, #d66dff); /* Gradient background */
+    color: white;   
+    text-decoration: none;
+    padding: 12px 30px;
+    border-radius: 50px; /* Rounded corners */
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-align: center;
+    display: inline-block;
+    transition: all 0.3s ease-in-out; /* Smooth transition */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    transform: scale(1); /* Normal scale */
+}
+
+.download-btn:hover {
+    background: linear-gradient(135deg, #d66dff, #6f42c1); /* Reversed gradient on hover */
+    transform: scale(1.05); /* Slightly enlarge button on hover */
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2); /* Stronger shadow on hover */
+}
+ 
+.download-btn:active {
+    transform: scale(1); /* Reset size when clicked */
+}
+
+.download-btn:focus {  
+    outline: none; /* Remove focus outline */ 
+}
+
     </style>
 </head>
 <body>
@@ -157,12 +174,11 @@
     </header>
     <div class="container">
         <div class="slider-container">
-            <h2>Select Hour</h2>
+            <h2>2024 Congestion Areas</h2>
             <input type="range" min="0" max="23" value="11" id="hourSlider" class="slider">
-            <p id="hourLabel" class="slider-label">Hour: 11:00 AM</p>
+            <p id="hourLabel" class="slider-label">11:00 AM</p>
         </div>
         <div class="chart-container">
-            <h2>2024 Congestion Areas</h2>
             <iframe id="heatmapIframe" src="heatmaps/traffic_heatmap_11.html"></iframe>
         </div>
     </div>
@@ -224,7 +240,7 @@ class="download-btn">Download Part 2</a>
         hourSlider.addEventListener('input', function() {
             const hour = hourSlider.value;
             let hourText = formatHour(hour); // Format hour to display AM/PM format
-            hourLabel.textContent = `Hour: ${hourText}`;
+            hourLabel.textContent = `${hourText}`;
 
             // Update the heatmap based on the selected hour
             updateHeatmap(hour);
